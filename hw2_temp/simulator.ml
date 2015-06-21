@@ -84,7 +84,7 @@ let rind : reg -> int = function
 
 (* Convert an int64 to its sbyte representation *)
 let sbytes_of_int64 (i:int64) : sbyte list =
-  let open Char in 
+  let open Char in
   let open Int64 in
   List.map (fun n -> Byte (shift_right i n |> logand 0xffL |> to_int |> chr))
            [0; 8; 16; 24; 32; 40; 48; 56]
@@ -123,20 +123,26 @@ let sbytes_of_data : data -> sbyte list = function
   | Asciz s -> sbytes_of_string s
   | Quad (Lbl _) -> invalid_arg "sbytes_of_data: tried to serialize a label!"
 
-
 (* It might be useful to toggle printing of intermediate states of your 
    simulator. *)
 let debug_simulator = ref false
 
 (* Interpret a condition code with respect to the given flags. *)
-let interp_cnd {fo; fs; fz} : cnd -> bool = fun x -> failwith "interp_cnd unimplemented"
-
-
+let interp_cnd {fo; fs; fz} : cnd -> bool = fun x ->
+  match x with
+  | Eq  -> fz
+  | Neq -> not fz
+  | Gt  -> not (fz || (fs <> fo))
+  | Ge  -> (fo && fs) || not (fs || (fs <> fo))
+  | Lt  -> fs <> fo
+  | Le  -> fz || (fs <> fo)
 
 (* Maps an X86lite address into Some OCaml array index,
    or None if the address is not within the legal address space. *)
 let map_addr (addr:quad) : int option =
-  failwith "map_addr not implemented"
+  match (addr >= mem_bot) && (addr < mem_top) with
+  | false -> None
+  | true -> Some (Int64.to_int (Int64.sub addr mem_bot))
 
 (* Simulates one step of the machine:
     - fetch the instruction at %rip
