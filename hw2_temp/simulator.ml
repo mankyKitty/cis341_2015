@@ -62,7 +62,7 @@ type flags = { mutable fo : bool
              }
 
 (* Register files *)
-type regs = int64 array
+type regs = quad array
 
 (* Complete machine state *)
 type mach = { flags : flags
@@ -152,9 +152,21 @@ let map_addr (addr:quad) : int option =
     - set the condition flags
 *)
 let step (m:mach) : unit =
-failwith "step unimplemented"
+  match map_addr(m.regs.(rind Rip)) with
+  | None -> raise X86lite_segfault
+  | Some addr -> failwith "omg addr" (*match m.mem.(addr) with *)
+  (*   |  *)
+  (* | InsB0 ins -> failwith "insb0 unip" *)
+  (* | InsFrag -> failwith "2nd,3rd,4th byte" *)
+  (* | Byte ch -> failwith "nom bytes" *)
 
-(* Runs the machine until the rip register reaches a designated
+  (* | Imm imm -> failwith "imm unimplemented" *)
+  (* | Reg reg -> failwith "reg unip" *)
+  (* | Ind1 i1 -> failwith "ind1 unip" *)
+  (* | Ind2 i2 -> failwith "ind2 unip" *)
+  (* | Ind3 (imm,reg) -> failwith "ind3 unip" *)
+
+(* Runs themachine until the rip register reaches a designated
    memory address. *)
 let run (m:mach) : int64 = 
   while m.regs.(rind Rip) <> exit_addr do step m done;
